@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Reservas Aerocali</title>
+    <style>
+        body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: 
+        linear-gradient(rgba(78, 115, 147, 0.9), rgba(95, 104, 111, 0.9)),
+        url('./imagen/logoaero.png') no-repeat center center;
+    background-size: 30%;
+    --background-color: #f0f8ff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+        .login-box {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #0066cc;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: bold;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background-color: #0055aa;
+        }
+        
+        .error {
+            color: #ff3333;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        
+        .info {
+            margin-top: 20px;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .register-link {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        
+        .register-link a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h1>Reservas sala de Proyección</h1>
+        
+        <form id="loginForm">
+            <div class="input-group">
+                <label for="username">Correo empresarial</label>
+                <input type="email" id="username" required placeholder="tu@aerocali.com.co">
+            </div>
+            
+            <div class="input-group">
+                <label for="password">Contraseña (Cédula)</label>
+                <input type="password" id="password" required placeholder="Tu número de cédula">
+            </div>
+            
+            <button type="submit">Ingresar</button>
+            
+            <div id="error" class="error"></div>
+            
+            <div class="register-link">
+                ¿No tienes cuenta? <a href="#" id="registerBtn">Regístrate aquí</a>
+            </div>
+            
+            <div class="info">
+                <p>Usa tu correo empresarial (@aerocali.com.co) y tu número de cédula como contraseña inicial.</p>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        
+        let users = JSON.parse(localStorage.getItem('users')) || {};
+        
+        
+        const defaultAdmins = {
+            "pasante_tics@aerocali.com.co": "1110363925",
+            "fbueno@aerocali.com.co": "admin456",
+            "jrodriguez@aerocali.com.co": "admin789"
+        };
+        
+        
+        if (!localStorage.getItem('usersInitialized')) {
+            users = {...defaultAdmins};
+            localStorage.setItem('users', JSON.stringify(users));
+            localStorage.setItem('usersInitialized', 'true');
+        }
+
+        
+        
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const errorElement = document.getElementById('error');
+            
+            
+            if (!username || !password) {
+                errorElement.textContent = 'Por favor complete todos los campos';
+                return;
+            }
+            
+            
+            if (!username.endsWith('@aerocali.com.co')) {
+                errorElement.textContent = 'Debe usar su correo empresarial (@aerocali.com.co)';
+                return;
+            }
+            
+            
+            if (users[username] && users[username] === password) {
+                // Guardar sesión
+                sessionStorage.setItem('auth', JSON.stringify({
+                    user: username,
+                    name: username.split('@')[0].replace('_', ' '),
+                    isAdmin: Object.keys(defaultAdmins).includes(username),
+                    time: new Date().getTime()
+                }));
+                
+                
+                window.location.href = 'calendario_reservas.html';
+            } else {
+                errorElement.textContent = 'Credenciales incorrectas o usuario no registrado';
+            }
+        });
+        
+        
+        document.getElementById('registerBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            const username = prompt("Ingrese su correo empresarial (@aerocali.com.co):");
+            
+            if (!username) return;
+            
+            if (!username.endsWith('@aerocali.com.co')) {
+                alert("Debe usar un correo empresarial válido (@aerocali.com.co)");
+                return;
+            }
+            
+            if (users[username]) {
+                alert("Este correo ya está registrado");
+                return;
+            }
+            
+            const cedula = prompt("Ingrese su número de cédula (será su contraseña inicial):");
+            if (!cedula) return;
+            
+            
+            users[username] = cedula;
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            alert("Registro exitoso. Ahora puede iniciar sesión con su correo y cédula.");
+        });
+    </script>
+</body>
+</html>
